@@ -85,6 +85,16 @@ export class ApiClient {
   }
 
   /**
+   * PATCH request
+   */
+  async patch<T>(endpoint: string, data?: unknown): Promise<T> {
+    return this.request<T>(endpoint, {
+      method: 'PATCH',
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  /**
    * DELETE request
    */
   async delete<T>(endpoint: string): Promise<T> {
@@ -94,3 +104,6 @@ export class ApiClient {
 
 // Export singleton instance
 export const apiClient = new ApiClient();
+
+// Default export for compatibility
+export default apiClient;

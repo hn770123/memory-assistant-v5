@@ -30,8 +30,10 @@ app.get('/health', (c) => {
 });
 
 // API routes
+import conversationRoutes from './routes/conversations';
+
 app.route('/api/auth', authRoutes);
-// app.route('/api/conversations', conversationRoutes);
+app.route('/api/conversations', conversationRoutes);
 // app.route('/api/memories', memoryRoutes);
 
 // 404 handler
