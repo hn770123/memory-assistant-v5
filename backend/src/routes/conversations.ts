@@ -3,6 +3,7 @@ import type { Env } from '../types';
 import { authMiddleware, type AuthContext } from '../middleware/auth.middleware';
 import { ChatService } from '../services/chat.service';
 import { AIService } from '../services/ai.service';
+import { MemoryService } from '../services/memory.service';
 
 const app = new Hono<{ Bindings: Env; Variables: AuthContext }>();
 
@@ -105,12 +106,15 @@ app.post('/:id/messages', async (c) => {
     // 会話履歴を取得
     const messageHistory = await chatService.getMessages(conversationId, user.userId);
 
-    // AIサービスを初期化
+    // AIサービスとメモリサービスを初期化
     const aiService = new AIService(c.env.AI);
+    const memoryService = new MemoryService(c.env.DB, c.env.AI);
 
-    // TODO: フェーズ4でメモリ管理を統合
-    // 現時点ではメモリなしでAI応答を生成
-    const systemPrompt = aiService.buildSystemPrompt();
+    // コアコンテキストメモリを取得
+    const coreContextMemories = await memoryService.getCoreContextMemories(user.userId);
+
+    // システムプロンプトを構築（コアコンテキストを含む）
+    const systemPrompt = aiService.buildSystemPrompt(coreContextMemories);
 
     // メッセージ履歴をAI用のフォーマットに変換
     const aiMessages = messageHistory.map((msg) => ({
@@ -131,6 +135,13 @@ app.post('/:id/messages', async (c) => {
       aiResponse
     );
 
+    // ユーザー入力からメモリを処理して保存
+    const memoriesCreated = await memoryService.processAndSaveMemories(
+      user.userId,
+      conversationId,
+      content
+    );
+
     // 会話のタイトルが未設定の場合、最初のメッセージから生成
     if (conversation.title === '新しい会話' && messageHistory.length === 1) {
       const title = content.substring(0, 50) + (content.length > 50 ? '...' : '');
@@ -140,8 +151,12 @@ app.post('/:id/messages', async (c) => {
     return c.json({
       message: userMessage,
       ai_response: assistantMessage,
-      // フェーズ4で追加予定
-      memories_created: [],
+      memories_created: memoriesCreated.map((m) => ({
+        id: m.id,
+        structured_text: m.structured_text,
+        memory_type: m.memory_type,
+        category: m.category,
+      })),
     });
   } catch (error) {
     console.error('Error sending message:', error);

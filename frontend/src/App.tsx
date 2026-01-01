@@ -3,10 +3,15 @@ import { useAuth } from './hooks/useAuth';
 import { LoginForm } from './components/auth/LoginForm';
 import { RegisterForm } from './components/auth/RegisterForm';
 import { ChatWindow } from './components/chat/ChatWindow';
+import MemoryList from './components/memory/MemoryList';
+import MemorySearch from './components/memory/MemorySearch';
+
+type View = 'chat' | 'memories' | 'search';
 
 function App() {
   const { user, loading, logout } = useAuth();
   const [showRegister, setShowRegister] = useState(false);
+  const [currentView, setCurrentView] = useState<View>('chat');
 
   if (loading) {
     return (
@@ -47,10 +52,48 @@ function App() {
             </button>
           </div>
         </div>
+
+        {/* ナビゲーション */}
+        <nav className="px-6 py-2 border-t border-gray-200">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setCurrentView('chat')}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                currentView === 'chat'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              チャット
+            </button>
+            <button
+              onClick={() => setCurrentView('memories')}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                currentView === 'memories'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              メモリ管理
+            </button>
+            <button
+              onClick={() => setCurrentView('search')}
+              className={`px-4 py-2 rounded-md transition-colors ${
+                currentView === 'search'
+                  ? 'bg-blue-600 text-white'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              メモリ検索
+            </button>
+          </div>
+        </nav>
       </header>
 
-      <main className="flex-1 overflow-hidden">
-        <ChatWindow />
+      <main className="flex-1 overflow-auto">
+        {currentView === 'chat' && <ChatWindow />}
+        {currentView === 'memories' && <MemoryList />}
+        {currentView === 'search' && <MemorySearch />}
       </main>
     </div>
   );
