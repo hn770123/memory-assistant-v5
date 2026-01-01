@@ -11,9 +11,9 @@ import type { JWTPayload } from '../types';
 export function generateToken(
   payload: Omit<JWTPayload, 'iat' | 'exp'>,
   secret: string,
-  expiresIn: string = '24h'
+  expiresIn: string | number = '24h'
 ): string {
-  return jwt.sign(payload, secret, { expiresIn });
+  return jwt.sign(payload, secret, { expiresIn } as jwt.SignOptions);
 }
 
 /**
