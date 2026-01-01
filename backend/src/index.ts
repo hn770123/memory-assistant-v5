@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import type { Env } from './types';
+import authRoutes from './routes/auth';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -28,8 +29,8 @@ app.get('/health', (c) => {
   return c.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// API routes will be added in future phases
-// app.route('/api/auth', authRoutes);
+// API routes
+app.route('/api/auth', authRoutes);
 // app.route('/api/conversations', conversationRoutes);
 // app.route('/api/memories', memoryRoutes);
 
