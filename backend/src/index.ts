@@ -31,10 +31,13 @@ app.get('/health', (c) => {
 
 // API routes
 import conversationRoutes from './routes/conversations';
+import memoryRoutes from './routes/memories';
+import { authMiddleware } from './middleware/auth.middleware';
 
 app.route('/api/auth', authRoutes);
 app.route('/api/conversations', conversationRoutes);
-// app.route('/api/memories', memoryRoutes);
+app.use('/api/memories/*', authMiddleware);
+app.route('/api/memories', memoryRoutes);
 
 // 404 handler
 app.notFound((c) => {
